@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+class ArticlePublishedManager(models.Manager):
+	def get_queryset(self):
+		return super().get_queryset().filter(status=Article.Status.PUBLISHED)
+		pass
+	pass
+
+
 class Article(models.Model):
 
 	class Status(models.TextChoices):
@@ -20,6 +27,9 @@ class Article(models.Model):
 								choices=Status.choices,
 								default=Status.DRAFT
 							)
+
+	objects = models.Manager() # The default manager
+	publishedArticles = ArticlePublishedManager() # The custom manager
 
 	class Meta:
 		ordering = ['-publish']
