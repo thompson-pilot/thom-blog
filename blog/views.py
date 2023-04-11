@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Article
 from django.http import HttpResponse
 from django.http import Http404
-from django.urls import reverse
+
 
 
 def list_of_articles(request):
@@ -14,9 +14,15 @@ def list_of_articles(request):
 	pass
 
 
-def article_details(request, id):
+def article_details(request, year, month, day, article):
 	try:
-		article = get_object_or_404(Article, id=id, status=Article.Status.PUBLISHED)
+		article = get_object_or_404(Article, status=Article.Status.PUBLISHED,
+					slug=article,
+					publish__year=year,
+					publish__month=month,
+					publish__day=day
+				)
+
 	except Article.DoesNotExist:
 		raise Http404("No article found.")
 
