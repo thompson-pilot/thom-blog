@@ -5,25 +5,29 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import CommentForm
 from django.views.decorators.http import require_POST
+from taggit.models import Tag
 
 
 
 
-def list_of_articles(request):
-	articles = Article.publishedArticles.all()
+def list_of_articles(request, tag_slug = None):
+    articles = Article.publishedArticles.all()
 
-	paginator = Paginator(articles, 3)
-	page_number = request.GET.get('page', 1)
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        articles = articles.filter(tags__in=[tag])
 
-	try:
-		articles = paginator.page(page_number)
-	except EmptyPage:
-		articles = paginator.page(paginator.num_pages)
-	except PageNotAnInteger:
-		articles = paginator.page(1)
-	
-	return render(request, 'blog/list.html', {'articles': articles})
-	pass
+    paginator = Paginator(articles, 3)
+    page_number = request.GET.get('page', 1)
+    try:
+        articles = paginator.page(page_number)
+    except EmptyPage:
+        articles = paginator.page(paginator.num_pages)
+    except PageNotAnInteger:
+        articles = paginator.page(1)
+
+    return render(request, 'blog/list.html', {'articles': articles, 'tag': tag})
 
 
 def article_details(request, year, month, day, article):
@@ -60,7 +64,7 @@ def comment_for_article(request, article_id):
     comment = None
     
     # A comment form
-    
+
     # form = CommentForm(data=request.Article)
     form = CommentForm(data=request.POST)
 
